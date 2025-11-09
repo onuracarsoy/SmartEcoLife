@@ -60,7 +60,6 @@ içerir. Bu mimari sayesinde:
 ### Yapay Zeka
 - **Microsoft Semantic Kernel 1.66.0**: AI uygulamaları için framework
 - **OpenAI API** (OpenRouter üzerinden): Büyük dil modelleri entegrasyonu
-- **Minimax M2 Model**: Ücretsiz ve güçlü AI modeli
 
 ### Diğer Kütüphaneler
 - **AutoMapper 15.1.0**: Nesne eşleme
@@ -132,12 +131,12 @@ dotnet run
   "AI": {
     "Recommendation": {
       "Provider": "https://openrouter.ai/api/v1",
-      "Model": "minimax/minimax-m2:free",
+      "Model": "model_name",
       "ApiKey": "your-api-key"
     },
     "Chat": {
       "Provider": "https://openrouter.ai/api/v1",
-      "Model": "minimax/minimax-m2:free",
+      "Model": "model_name",
       "ApiKey": "your-api-key"
     }
   },
@@ -178,21 +177,9 @@ SmartEcoLife/
 4. **AI Asistanı ile Sohbet**: Sel AI chatbot ile finansal durumunuz hakkında sorular sorun
 5. **Önerileri İnceleme**: Dashboard'da AI'dan gelen kişiselleştirilmiş önerileri görün
 
-## 🔒 Güvenlik
 
-- ASP.NET Core Identity ile güvenli kimlik doğrulama
-- HTTPS yönlendirmesi
-- Anti-forgery token koruması
-- Kullanıcı bazlı veri izolasyonu
-- API anahtarları güvenli yapılandırma dosyasında saklanır
 
-## 📝 Lisans
 
-Bu proje özel bir projedir.
-
-## 🤝 Katkıda Bulunma
-
-Katkılarınızı bekliyoruz! Lütfen önce bir issue açın veya mevcut issue'ları kontrol edin.
 
 ---
 
