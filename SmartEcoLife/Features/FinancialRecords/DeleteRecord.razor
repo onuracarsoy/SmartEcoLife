@@ -1,0 +1,16 @@
+﻿@inject FinancialRecordService FinancialRecordService
+@inject NavigationManager Navigation
+
+<Button Class="btn btn-sm btn-outline-danger" @onclick="HandleDelete"><i class="bi bi-trash-fill"></i></Button>
+
+@code {
+    [Parameter]
+    public Guid RecordId { get; set; }
+
+  
+    private async Task HandleDelete()
+    {
+        await FinancialRecordService.DeleteAsync(RecordId);
+        Navigation.NavigateTo("/financial-record", forceLoad: true);
+    }
+}

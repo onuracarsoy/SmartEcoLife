@@ -1,0 +1,17 @@
+﻿@inject GoalService GoalService
+@inject NavigationManager Navigation
+
+<Button Class="btn btn-sm btn-outline-danger" @onclick="HandleDelete"><i class="bi bi-trash-fill"></i></Button>
+
+@code {
+    [Parameter]
+    public Guid GoalId { get; set; }
+
+
+    private async Task HandleDelete()
+    {
+        await GoalService.DeleteAsync(GoalId);
+        Navigation.NavigateTo("/goals", forceLoad: true);
+    }
+}
+

@@ -1,0 +1,107 @@
+@page "/register"
+@layout EmptyLayout
+@inject UserService UserService
+@inject NavigationManager NavigationManager
+
+<div class="dark-register-container">
+    <div class="dark-register-form">
+      
+
+
+
+
+        <div class="form-header">
+            <h2>Hesap Oluþtur</h2>
+            <p>Zaten hesabýn var mý? <a href="/login">Giriþ Yap</a></p>
+        </div>
+
+        <EditForm Model="registerDto" FormName="register" OnValidSubmit="HandleRegister">
+            <DataAnnotationsValidator />
+
+            <div class="form-group">
+                <div class="input-group">
+                    <i class="fas fa-user"></i>
+                    <InputText @bind-Value="registerDto.DisplayName"
+                               class="dark-input"
+                               placeholder="Ad Soyad" />
+                </div>
+                <ValidationMessage For="@(() => registerDto.DisplayName)" />
+            </div>
+
+            <div class="form-group">
+                <div class="input-group">
+                    <i class="fas fa-envelope"></i>
+                    <InputText @bind-Value="registerDto.Email"
+                               class="dark-input"
+                               placeholder="E-posta" />
+                </div>
+                <ValidationMessage For="@(() => registerDto.Email)" />
+            </div>
+
+            <div class="form-group">
+                <div class="input-group">
+                    <i class="fas fa-lock"></i>
+                    <InputText @bind-Value="registerDto.Password"
+                               type="password"
+                               class="dark-input"
+                               placeholder="Þifre" />
+                </div>
+                <ValidationMessage For="@(() => registerDto.Password)" />
+                <div class="password-requirements">
+                    <small>
+                        <i class="fas fa-info-circle"></i>
+                        Þifreniz en az 6 karakter uzunluðunda olmalý ve þunlarý içermelidir:
+                        <ul>
+                            <li>Bir büyük harf</li>
+                            <li>Bir küçük harf</li>
+                            <li>Bir rakam</li>
+                            <li>Bir özel karakter</li>
+                        </ul>
+                    </small>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="input-group">
+                    <i class="fas fa-lock"></i>
+                    <InputText @bind-Value="registerDto.ConfirmPassword"
+                               type="password"
+                               class="dark-input"
+                               placeholder="Þifreyi Tekrarla" />
+                </div>
+                <ValidationMessage For="@(() => registerDto.ConfirmPassword)" />
+            </div>
+
+            @if (!string.IsNullOrEmpty(message))
+            {
+                <div class="alert-error">
+                    @((MarkupString)message)
+                </div>
+            }
+
+            <button type="submit" class="register-button">
+                <span>Kayýt Ol</span>
+                <i class="fas fa-arrow-right"></i>
+            </button>
+        </EditForm>
+    </div>
+</div>
+
+@code {
+    [SupplyParameterFromForm] 
+    private RegisterDto registerDto { get; set; } = new();
+    private string message = string.Empty;
+
+    private async Task HandleRegister()
+    {
+        var result = await UserService.RegisterAsync(registerDto);
+        if (result.Succeeded)
+        {
+            NavigationManager.NavigateTo("/Login");
+        }
+        else
+        {
+            message = string.Join("<br/>", result.Errors.Select(e => e.Description));
+        }
+    }
+}

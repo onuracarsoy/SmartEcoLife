@@ -1,0 +1,38 @@
+﻿@page "/MyAccount"
+@rendermode InteractiveServer
+<h3>Profilim</h3>
+
+<style>
+    .nav-link{
+        color: gray;
+    }
+
+    .nav-link:hover{
+        color: white;
+    }
+</style>
+
+<Tabs EnableFadeEffect="true" >
+    <Tab Title="Ad Soyad"  Active="true">
+        <Content>
+            <br />
+            <ChangeNameSurname />
+        </Content>
+    </Tab>
+    <Tab Title="Şifre Güncelleme">
+        <Content>
+            <br />
+            <ChangePassword />
+        </Content>
+    </Tab>
+    <Tab Title="Hesabımı Sil">
+        <Content>
+            <br />
+            <DeleteMyAccount />
+        </Content>
+    </Tab>
+
+</Tabs>
+
+
+

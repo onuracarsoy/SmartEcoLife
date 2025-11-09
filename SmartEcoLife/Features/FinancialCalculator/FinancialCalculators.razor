@@ -1,0 +1,51 @@
+﻿@page "/financial-calculators"
+@attribute [Authorize]
+@rendermode InteractiveServer
+<div class="row">
+    <div class="col-12">
+        <h3 class="mb-3"><i class="fa fa-calculator"></i> Hesaplayıcılar</h3>
+
+    </div>
+</div>
+
+<style>
+    .nav-link {
+        color: gray;
+       
+    }
+
+        .nav-link:hover {
+            color: white;
+        }
+
+     .nav-link active{
+ 
+        color:White;
+        
+
+    }
+    .nav-underline .nav-link.active, .nav-underline .show > .nav-link {
+        font-weight: 700;
+        color: white;
+        border-bottom-color: white;}
+</style>
+
+<Tabs NavStyle="NavStyle.VerticalUnderline" >
+    <Tab Title="Bileşik Faiz" Active="true" >
+        <Content>
+          <CompoundInterestCalculator/>
+        </Content>
+    </Tab>
+    <Tab Title="Kredi">
+        <Content>
+            <LoanCalculator />
+        </Content>
+    </Tab>
+
+</Tabs>
+
+
+
+@code {
+
+}

@@ -1,0 +1,170 @@
+﻿@inject GoalService GoalService
+@inject NavigationManager NavigationManager
+@rendermode InteractiveServer
+
+@if (goals is null)
+{
+    <div class="d-flex justify-content-center align-items-center" style="height:200px;">
+        <Spinner Type="SpinnerType.Grow" Class="bg-white" Size="SpinnerSize.Large" />
+    </div>
+}
+else if (!goals.Any())
+{
+
+    <div class="d-flex justify-content-center align-items-center" style="height:200px;">
+        <p class="text-center fs-5"><i class="bi bi-archive "></i>  Henüz bir hedef eklemediniz.</p>
+    </div>
+}
+else
+{
+    <p class=" mb-2">Devam Eden Hedefler:</p>
+    <Grid TItem="GoalDto"
+          Class="table table-hover table-dark mt-3 text-white"
+          Data="goals.Where(g => !g.Achieved)">
+        <GridColumns>
+            <GridColumn TItem="GoalDto"  PropertyName="Achieved">
+
+                <Switch Class="mt-2"
+                        Checked="@context.Achieved"
+                        ValueExpression="@(() => context.Achieved)"
+                        ValueChanged="@(async (bool val) => await SwitchChanged(context, val))" />
+
+            </GridColumn>
+
+            <GridColumn TItem="GoalDto" HeaderText="Durum" PropertyName="Achieved">
+
+                <span class="badge bg-warning text-dark">Devam</span>
+
+
+            </GridColumn>
+
+            <GridColumn TItem="GoalDto" HeaderText="Başlık" PropertyName="Title">
+                @context.Title
+            </GridColumn>
+
+            <GridColumn TItem="GoalDto" HeaderText="Açıklama" PropertyName="Description">
+                @((string.IsNullOrEmpty(context.Description) ? "-" : context.Description))
+            </GridColumn>
+
+            <GridColumn TItem="GoalDto" HeaderText="Hedef Miktar" PropertyName="TargetAmount">
+                @if (context.TargetAmount.HasValue)
+                {
+                    @context.TargetAmount.Value.ToString("C2")
+                }
+                else
+                {
+                    <span>-</span>
+                }
+            </GridColumn>
+
+            <GridColumn TItem="GoalDto" HeaderText="Oluşturulma Tarihi" PropertyName="CreatedAt">
+                @context.CreatedAt.ToLocalTime().ToString("dd.MM.yyyy")
+            </GridColumn>
+
+            <GridColumn TItem="GoalDto" HeaderText="Son Tarih" PropertyName="DueDate">
+                @if (context.DueDate.HasValue)
+                {
+                    @context.DueDate.Value.ToLocalTime().ToString("dd.MM.yyyy")
+                }
+                else
+                {
+                    <span>-</span>
+                }
+            </GridColumn>
+
+            <GridColumn TItem="GoalDto" HeaderText="İşlemler" PropertyName="Id">
+                <div class="d-flex gap-2">
+                    <a class="btn btn-sm btn-outline-light" href="/goals/update/@context.Id">
+                        <i class="bi bi-pencil-fill"></i>
+                    </a>
+                    <DeleteGoal GoalId="@context.Id" />
+
+                </div>
+            </GridColumn>
+        </GridColumns>
+    </Grid>
+
+    <p class=" mt-4 mb-2">Tamamlanan Hedefler:</p>
+    <Grid TItem="GoalDto"
+          Class="table table-hover table-dark mt-3 text-white"
+          Data="goals.Where(g => g.Achieved)">
+        <GridColumns>
+            <GridColumn TItem="GoalDto" PropertyName="Achieved">
+
+                <Switch Class="mt-2"
+                        Checked="@context.Achieved"
+                        ValueExpression="@(() => context.Achieved)"
+                        ValueChanged="@(async (bool val) => await SwitchChanged(context, val))" />
+
+            </GridColumn>
+
+            <GridColumn TItem="GoalDto" HeaderText="Durum" PropertyName="Achieved">
+
+                <span class="badge bg-success text-dark">Tamamlandı</span>
+
+
+            </GridColumn>
+
+            <GridColumn TItem="GoalDto" HeaderText="Başlık" PropertyName="Title">
+                @context.Title
+            </GridColumn>
+
+            <GridColumn TItem="GoalDto" HeaderText="Açıklama" PropertyName="Description">
+                @((string.IsNullOrEmpty(context.Description) ? "-" : context.Description))
+            </GridColumn>
+
+            <GridColumn TItem="GoalDto" HeaderText="Hedef Miktar" PropertyName="TargetAmount">
+                @if (context.TargetAmount.HasValue)
+                {
+                    @context.TargetAmount.Value.ToString("C2")
+                }
+                else
+                {
+                    <span>-</span>
+                }
+            </GridColumn>
+
+            <GridColumn TItem="GoalDto" HeaderText="Oluşturulma Tarihi" PropertyName="CreatedAt">
+                @context.CreatedAt.ToLocalTime().ToString("dd.MM.yyyy")
+            </GridColumn>
+
+            <GridColumn TItem="GoalDto" HeaderText="Son Tarih" PropertyName="DueDate">
+                @if (context.DueDate.HasValue)
+                {
+                    @context.DueDate.Value.ToLocalTime().ToString("dd.MM.yyyy")
+                }
+                else
+                {
+                    <span>-</span>
+                }
+            </GridColumn>
+
+            <GridColumn TItem="GoalDto" HeaderText="İşlemler" PropertyName="Id">
+                <div class="d-flex gap-2">
+                    <DeleteGoal GoalId="@context.Id" />
+                </div>
+            </GridColumn>
+        </GridColumns>
+    </Grid>
+}
+
+@code {
+    private IEnumerable<GoalDto>? goals;
+
+    private async Task SwitchChanged(GoalDto goal, bool value)
+    {
+        goal.Achieved = value;
+        await GoalService.MarkAsAchievedAsync(goal.Id,value);
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        goals = await GoalService.GetAllAsync();
+    }
+
+    private void EditGoal(Guid id)
+    {
+        NavigationManager.NavigateTo($"/goals/edit/{id}");
+    }
+
+}

@@ -1,0 +1,69 @@
+@page "/login"
+@layout EmptyLayout
+@inject NavigationManager NavigationManager
+@inject UserService UserService
+
+<div class="dark-register-container">
+    <div class="dark-register-form">
+        <div class="form-header">
+            <h2>Giriþ Yap</h2>
+            <p>Hesabýn yok mu? <a href="/register">Kayýt Ol</a></p>
+        </div>
+
+        <EditForm Model="loginDto" FormName="login" OnValidSubmit="HandleLogin">
+            <DataAnnotationsValidator />
+
+            <div class="form-group">
+                <div class="input-group">
+                    <i class="fas fa-envelope"></i>
+                    <InputText @bind-Value="loginDto.Email"
+                               class="dark-input"
+                               placeholder="E-posta" />
+                </div>
+                <ValidationMessage For="@(() => loginDto.Email)" />
+            </div>
+
+            <div class="form-group">
+                <div class="input-group">
+                    <i class="fas fa-lock"></i>
+                    <InputText @bind-Value="loginDto.Password"
+                               type="password"
+                               class="dark-input"
+                               placeholder="Þifre" />
+                </div>
+                <ValidationMessage For="@(() => loginDto.Password)" />
+            </div>
+
+            @if (!string.IsNullOrEmpty(message))
+            {
+                <div class="alert-error">
+                    @((MarkupString)message)
+                </div>
+            }
+
+            <button type="submit" class="register-button">
+                <span>Giriþ Yap</span>
+                <i class="fas fa-sign-in-alt"></i>
+            </button>
+        </EditForm>
+    </div>
+</div>
+
+@code {
+    [SupplyParameterFromForm]
+    private LoginDto loginDto { get; set; } = new();
+    private string message = string.Empty;
+
+    private async Task HandleLogin()
+    {
+        var result = await UserService.LoginAsync(loginDto);
+        if (result.Succeeded)
+        {
+            NavigationManager.NavigateTo("/");
+        }
+        else
+        {
+            message = "Kullanýcý adý veya þifre hatalý";
+        }
+    }
+}

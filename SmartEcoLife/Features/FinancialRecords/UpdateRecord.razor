@@ -1,0 +1,118 @@
+﻿@page "/financial-record/update/{RecordId:guid}"
+@inject FinancialRecordService FinancialRecordService
+@inject NavigationManager NavigationManager
+@inject CategoryService CategoryService
+@rendermode InteractiveServer
+
+<div class="row">
+    <div class="col-12">
+        <h3 class="mb-4"><i class="bi bi-pencil-square"></i> Kaydı Düzenle</h3>
+    </div>
+</div>
+
+@if(model is not null)
+{
+    @if (!string.IsNullOrEmpty(message))
+    {
+
+        <Alert Class="@messageType"> <Icon Name="IconName.CheckCircleFill" class="me-2"></Icon>@message </Alert>
+    }
+
+    <EditForm Model="model" OnValidSubmit="HandleUpdate">
+        <DataAnnotationsValidator />
+
+        <div class="mb-3">
+            <p class="form-label fw-bold">* Başlık</p>
+            <InputText @bind-Value="model.Title" class="form-control bg-dark text-white" />
+            <ValidationMessage class="text-danger" For="@(() => model.Title)" />
+        </div>
+
+
+        <div class="mb-3">
+            <p class="form-label fw-bold"> * Tutar</p>
+            <InputNumber @bind-Value="model.Amount" class="form-control bg-dark text-white" />
+            <ValidationMessage class="text-danger" For="@(() => model.Amount)" />
+        </div>
+
+        <div class="mb-3">
+            <p class="form-label fw-bold">Açıklama</p>
+            <InputTextArea @bind-Value="model.Description" class="form-control bg-dark text-white" />
+            <ValidationMessage class="text-danger" For="@(() => model.Description)" />
+        </div>
+
+        <div class="mb-3">
+            <p class="form-label fw-bold">* Kayıt Türü</p>
+            <InputSelect @bind-Value="model.Type" class="form-control bg-dark text-white">
+                <option class="text-success" value="Income">Gelir</option>
+                <option class="text-danger " value="Expense">Gider</option>
+            </InputSelect>
+            <ValidationMessage class="text-danger" For="@(() => model.Type)" />
+        </div>
+
+        <div class="mb-3">
+            <p class="form-label fw-bold">* Kategori</p>
+            <InputSelect @bind-Value="model.CategoryId" class="form-control bg-dark text-white">
+                <option value="">Kategori seçin...</option>
+                @if (categories != null)
+                {
+                    @foreach (var cat in categories)
+                    {
+                        <option value="@cat.Id">@cat.Name</option>
+                    }
+                }
+            </InputSelect>
+            <ValidationMessage class="text-danger" For="@(() => model.CategoryId)" />
+        </div>
+
+
+
+        <button class="btn btn-primary" type="submit">Kaydet</button>
+        <a class="btn btn-danger" href="/financial-record">Vazgeç</a>
+    </EditForm>
+}
+else
+{
+    <div class="d-flex justify-content-center align-items-center" style="height: 100vh;">
+        <Spinner Type="SpinnerType.Grow" Class="bg-white" Size="SpinnerSize.ExtraLarge" />
+    </div>
+}
+
+
+
+
+@code {
+    [Parameter]
+    public Guid RecordId { get; set; }
+    private FinancialRecordDto model { get; set; } = new();
+    private string? message;
+    private string messageType;
+    private List<Category>? categories;
+
+    protected override async Task OnInitializedAsync()
+    {
+        categories = await CategoryService.GetAllAsync();
+        model = await FinancialRecordService.GetByIdAsync(RecordId);
+    }
+
+    private async Task HandleUpdate()
+    {
+
+
+        if (model is not null)
+        {
+            await FinancialRecordService.UpdateAsync(model);
+            await Task.Delay(500);
+            NavigationManager.NavigateTo("/financial-record", true);
+            messageType = "bg-success";
+            message = "Kayıt başarıyla düzenlendi.";
+            model = new();
+        }
+        else
+        {
+            messageType = "bg-danger";
+            message = "Kayıt düzenlenirken bir hata oluştu.";
+        }
+    }
+
+}
+

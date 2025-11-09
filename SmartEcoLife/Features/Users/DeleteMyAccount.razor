@@ -1,0 +1,53 @@
+﻿@inject UserService UserService
+@inject NavigationManager NavigationManager
+
+<p class="text-danger fw-bold">* Bu işlem geri alınamaz!</p>
+
+<!-- Silme butonu -->
+<Button class="btn btn-danger" @onclick="ShowConfirmDialog">
+    Hesabımı Sil
+</Button>
+
+<!-- Onay Modal -->
+<div class="modal fade @(ShowModal ? "show d-block" : "")" tabindex="-1" style="background-color: rgba(0,0,0,0.6);">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-dark text-white border border-secondary">
+            <div class="modal-header border-secondary">
+                <h5 class="modal-title text-danger">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    Hesabı Sil
+                </h5>
+                <button type="button" class="btn-close btn-close-white" @onclick="CloseConfirmDialog"></button>
+            </div>
+            <div class="modal-body">
+                <p>
+                    Bu işlem <strong>geri alınamaz!</strong><br />
+                    Hesabınızı silmek istediğinize emin misiniz?
+                </p>
+            </div>
+            <div class="modal-footer border-secondary">
+                <button class="btn btn-secondary" @onclick="CloseConfirmDialog">İptal</button>
+                <button class="btn btn-danger" @onclick="ConfirmDelete">
+                    <i class="bi bi-trash-fill me-1"></i> Sil
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private bool ShowModal = false;
+
+    private void ShowConfirmDialog() => ShowModal = true;
+    private void CloseConfirmDialog() => ShowModal = false;
+
+    private async Task ConfirmDelete()
+    {
+        ShowModal = false;
+        var result = await UserService.DeleteAccountAsync();
+        if (result.Succeeded)
+        {
+            NavigationManager.NavigateTo("/logout");
+        }
+    }
+}

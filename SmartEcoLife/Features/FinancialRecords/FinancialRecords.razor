@@ -1,0 +1,37 @@
+﻿@page "/financial-record"
+@attribute [Authorize]
+@rendermode InteractiveServer
+
+<div class="row">
+    <div class="col-12">
+        <h3 class="mb-3"><i class="bi bi-arrow-down-up"></i> Finansal Kayıtlar</h3>
+
+    </div>
+</div>
+
+<style>
+    .nav-link {
+        color: gray;
+    }
+
+        .nav-link:hover {
+            color: white;
+        }
+</style>
+
+<Tabs EnableFadeEffect="true">
+
+    <Tab Title="Kayıtlar" Active="true">
+        <Content>
+            <br />
+            <Records />
+        </Content>
+    </Tab>
+    <Tab Title="Yeni Kayıt" >
+        <Content>
+            <br />
+            <CreateRecord />
+        </Content>
+    </Tab>
+   
+</Tabs>

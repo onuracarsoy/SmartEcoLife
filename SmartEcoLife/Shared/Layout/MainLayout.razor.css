@@ -1,0 +1,110 @@
+/* Tüm sayfayý kaplayan ve esnek (flex) bir ana sarmalayýcý.
+          min-height: 100vh; -> Ekran yüksekliði kadar yer kaplamasýný saðlar.
+        */
+body {
+    display: flex;
+    background: linear-gradient(135deg, #0f1012 0%, #171923 100%);
+    min-height: 100vh;
+    overflow-x: hidden; /* Yatay kaydýrmayý engelle */
+}
+
+
+/* Sol Menü (Sidebar) Stilleri
+        */
+.sidebar {
+    width: 260px; /* Sabit geniþlik */
+    min-height: 100vh; /* Tam yükseklik */
+    background: linear-gradient(135deg, #0f1012 0%, #171923 100%);
+    padding: 1.5rem 1rem;
+    transition: margin-left 0.3s ease-in-out;
+    position: fixed; /* Sabit pozisyon */
+    top: 0;
+    left: 0;
+    z-index: 1000; /* Diðer içeriklerin üstünde */
+}
+
+/* Ana Ýçerik Alaný Stilleri
+        */
+.main-content {
+    flex-grow: 1; /* Kalan tüm alaný kapla */
+    padding: 0;
+    transition: margin-left 0.3s ease-in-out;
+    margin-left: 260px; /* Baþlangýçta sidebar geniþliði kadar boþluk býrak */
+    width: calc(100% - 260px); /* Kalan geniþliði hesapla */
+}
+
+/* JAVASCRIPT ÝLE EKLENECEK "collapsed" SINIFI (class)
+          Bu sýnýf eklendiðinde menü gizlenir.
+        */
+body.sidebar-collapsed .sidebar {
+    margin-left: -260px; /* Menüyü sola doðru kaydýrarak gizle */
+}
+
+body.sidebar-collapsed .main-content {
+    margin-left: 0; /* Ýçerik tüm alaný kaplasýn */
+    width: 100%;
+}
+
+/* Sidebar Link Stilleri */
+.sidebar .nav-link {
+    background: linear-gradient(135deg, #0f1012 0%, #171923 100%);
+    color: #adb5bd; /* Soluk metin rengi */
+    font-size: 1rem;
+    padding: 0.75rem 1rem;
+    border-radius: 0.375rem; /* Bootstrap "rounded" sýnýfý */
+    margin-bottom: 0.25rem;
+}
+
+    .sidebar .nav-link i {
+        margin-right: 0.75rem; /* Ýkon ve metin arasý boþluk */
+        width: 20px; /* Ýkonlarýn hizalý durmasý için */
+        text-align: center;
+    }
+
+    .sidebar .nav-link:hover {
+        background-color: #343a40; /* Vurgu rengi */
+        color: #fff;
+    }
+
+    .sidebar .nav-link.active {
+        background-color: #0d6efd; /* Bootstrap primary rengi */
+        color: #fff;
+        font-weight: 500;
+    }
+
+.sidebar-heading {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    color: #6c757d; /* "muted" renk */
+    padding: 0 1rem;
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+/* MOBÝL UYUMLULUK (Responsive)
+          768px (Bootstrap'in 'md' breakpoint'i) altý için
+        */
+@media (max-width: 767.98px) {
+    /* Mobilde menü baþlangýçta gizli */
+    .sidebar {
+        margin-left: -260px;
+    }
+
+    .main-content {
+        margin-left: 0;
+        width: 100%;
+    }
+
+    /* Mobilde "collapsed" sýnýfý TERSÝNE çalýþýr: Menüyü gösterir */
+    body.sidebar-collapsed .sidebar {
+        margin-left: 0; /* Menüyü göster */
+    }
+
+    /* Mobilde menü açýldýðýnda içeriði itmesin, üzerine gelsin */
+    /* Bu kýsým için ekstra bir overlay (arka plan karartma) eklenebilir, 
+               ancak basitlik için þimdilik sadece üzerine gelmesini saðlýyoruz. */
+}
+
+button {
+    border: none;
+}

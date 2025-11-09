@@ -1,0 +1,76 @@
+﻿
+@inject UserService UserService
+@inject AuthenticationStateProvider AuthProvider
+
+
+
+
+@if (model.NewDisplayName is not null)
+{
+
+    @if (!string.IsNullOrEmpty(message))
+    {
+        <Alert Class="@messageType"> <Icon Name="IconName.CheckCircleFill" class="me-2"></Icon>@message </Alert>
+
+    }
+
+
+    <EditForm Model="model" OnValidSubmit="HandleSubmit">
+        <DataAnnotationsValidator />
+        <p class="text-danger">* E-Posta değiştirelemez fakat adınızı ve soyadınızı dilediğiniz gibi değiştirebilirsiniz.</p>
+
+        <div class="mb-3">
+            <p class="form-label fw-bold">Ad Soyad</p>
+            <InputText @bind-Value="model.NewDisplayName" class="form-control bg-dark text-white" />
+
+        </div>
+
+        <button class="btn btn-primary" type="submit">Kaydet</button>
+    </EditForm>
+    <br />
+
+
+
+
+}
+else
+{
+
+    <div class="d-flex justify-content-center align-items-center" style="height: 100vh;">
+        <Spinner Type="SpinnerType.Grow" Class="bg-white" Size="SpinnerSize.ExtraLarge" />
+    </div>
+}
+
+
+@code {
+    private UpdateDisplayNameDto model = new();
+    private string message = string.Empty;
+    private string messageType = string.Empty;
+
+    override protected async Task OnInitializedAsync()
+    {
+        model.NewDisplayName = await UserService.GetDisplayNameAsync();
+    }
+
+    private async Task HandleSubmit()
+    {
+        var authState = await AuthProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        var userId = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+
+
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            messageType = "bg-danger";
+            message = "Kullanıcı oturumu bulunamadı.";
+            return;
+        }
+
+        var result = await UserService.UpdateDisplayNameAsync(Guid.Parse(userId), model.NewDisplayName);
+        messageType = "bg-success";
+        message = result.Succeeded ? "Ad Soyad başarıyla güncellendi." :
+                                     string.Join(", ", result.Errors.Select(e => e.Description));
+    }
+
+
+}

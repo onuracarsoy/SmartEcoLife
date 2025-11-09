@@ -1,0 +1,261 @@
+﻿@page "/"
+
+
+@attribute [Authorize]
+@rendermode InteractiveServer
+@inject UserService UserService
+@inject FinancialRecordService FinancialRecordService
+@inject GoalService GoalService
+@inject SelAIService SelAIService
+
+@if (records is not null && recommendation is not null)
+{
+    <div class="row">
+        <div class="col-12">
+            <h3 class="mb-1"><i class="fas fa-chart-line"></i> Raporlar</h3>
+            <p>Hoş geldin @displayName.</p>
+        </div>
+    </div>
+
+    <div class="card info-card text-white bg-dark shadow-sm mb-4">
+        <div class="card-body d-flex align-items-center">
+            <div class="me-3">
+
+            </div>
+            <div>
+                <h5 class="card-title mb-1"><strong>Sel AI</strong></h5>
+                <p class="card-text text-white mb-0">
+                    @recommendation
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-md-6 col-lg-3">
+            <div class="card bg-dark border-secondary text-white h-100">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="fas fa-sign-in text-success"></i> Toplam Gelir</h5>
+                    <p class="card-text fs-3">₺@totalIncome</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+            <div class="card bg-dark border-secondary text-white h-100">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="fas fa-sign-out text-danger"></i> Toplam Gider</h5>
+                    <p class="card-text fs-3">₺@totalExpense</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+            <div class="card bg-dark border-secondary text-white h-100">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="fa fa-star text-success"></i> Ulaşılan Hedefler</h5>
+                    <p class="card-text fs-3">@totalAchivedGoal</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-3">
+            <div class="card bg-dark border-secondary text-white h-100">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="fa fa-star-half text-warning"></i> Devam eden Hedefler</h5>
+                    <p class="card-text fs-3">@totalNotAchivedGoal</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-3 g-3">
+        <div class="col-12 col-md-6">
+            <BarChart @ref="barChart" class="w-100" />
+        </div>
+        <div class="col-12 col-md-6">
+            <LineChart @ref="lineChart" class="w-100" />
+        </div>
+        <div class="col-12 col-md-6">
+            <PieChart @ref="pieChart" class="w-100" />
+        </div>
+        <div class="col-12 col-md-6">
+ 
+        </div>
+    </div>
+}
+else
+{
+    <div class="d-flex justify-content-center align-items-center" style="height: 100vh;">
+        <Spinner Type="SpinnerType.Grow" Class="bg-white" Size="SpinnerSize.ExtraLarge" />
+    </div>
+}
+
+@code {
+    private string displayName { get; set; } = string.Empty;
+    private bool firstRender = true;
+    private string? recommendation = string.Empty;
+
+    private List<FinancialRecordDto> records = new();
+    private double totalIncome;
+    private double totalExpense;
+
+    private BarChart barChart = default!;
+    private LineChart lineChart = default!;
+
+    private List<GoalDto> goals = new();
+    private int totalAchivedGoal;
+    private int totalNotAchivedGoal;
+
+    private PieChart? pieChart;
+    private PieChartOptions pieChartOptions = new();
+    private ChartData chartData = new();
+    private string[] colors = { "#198754", "#ffc107" }; 
+
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        displayName = await UserService.GetDisplayNameAsync();
+        records = await FinancialRecordService.GetAllAsync();
+        goals = await GoalService.GetAllAsync();
+        await GenerateSelAIReportAsync();
+
+        totalIncome = (double)records.Where(r => r.Type == "Income").Sum(r => r.Amount);
+        totalExpense = (double)records.Where(r => r.Type == "Expense").Sum(r => r.Amount);
+
+
+        totalAchivedGoal = goals.Where(r => r.Achieved == true).Count();
+        totalNotAchivedGoal = goals.Where(r => r.Achieved == false).Count();
+    }
+
+    private async Task GenerateSelAIReportAsync()
+    {
+        recommendation = await SelAIService.GenerateRecommendationAsync();
+
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            this.firstRender = false;
+            await RenderBarChartAsync();
+            await RenderLineChartAsync();
+            await RenderPieChartAsync();
+
+        }
+
+        await base.OnAfterRenderAsync(firstRender);
+    }
+
+    private async Task RenderBarChartAsync()
+    {
+        var grouped = records
+            .GroupBy(r => r.Date.Month)
+            .OrderBy(g => g.Key)
+            .Select(g => new
+            {
+                Month = g.Key,
+                Income = (double)g.Where(x => x.Type == "Income").Sum(x => x.Amount),
+                Expense = (double)g.Where(x => x.Type == "Expense").Sum(x => x.Amount)
+            })
+            .ToList();
+
+        var data = new ChartData
+        {
+            Labels = grouped.Select(g => g.Month.ToString()).ToList(),
+            Datasets = new List<IChartDataset>
+            {
+                new BarChartDataset
+                {
+                    Label = "Gelir",
+                    Data = grouped.Select(g => (double?)g.Income).ToList(),
+                    BackgroundColor = new List<string>{ "rgb(25, 135, 84)" }
+                },
+                new BarChartDataset
+                {
+                    Label = "Gider",
+                    Data = grouped.Select(g => (double?)g.Expense).ToList(),
+                    BackgroundColor = new List<string>{ "rgb(220, 53, 69)" }
+                }
+            }
+        };
+
+        var options = new BarChartOptions();
+        options.Plugins.Title!.Display = true;
+        options.Plugins.Title.Text = "Aylık Gelir / Gider Dağılımı";
+        options.Plugins.Title.Color = "white";
+        options.Plugins.Title.Font = new ChartFont { Size = 20 };
+
+        await barChart.InitializeAsync(data, options);
+    }
+
+    private async Task RenderLineChartAsync()
+    {
+        var grouped = records
+            .GroupBy(r => r.Date.Month)
+            .OrderBy(g => g.Key)
+            .Select(g => new
+            {
+                Month = g.Key,
+                Income = (double)g.Where(x => x.Type == "Income").Sum(x => x.Amount),
+                Expense = (double)g.Where(x => x.Type == "Expense").Sum(x => x.Amount)
+            })
+            .ToList();
+
+        var data = new ChartData
+        {
+            Labels = grouped.Select(g => g.Month.ToString()).ToList(),
+            Datasets = new List<IChartDataset>
+            {
+                new LineChartDataset
+                {
+                    Label = "Gelir",
+                    Data = grouped.Select(g => (double?)g.Income).ToList(),
+                    BackgroundColor = "rgb(25, 135, 84)",
+                    BorderColor = "rgb(25, 135, 84)",
+                    BorderWidth = 2
+                },
+                new LineChartDataset
+                {
+                    Label = "Gider",
+                    Data = grouped.Select(g => (double?)g.Expense).ToList(),
+                    BackgroundColor = "rgb(220, 53, 69)",
+                    BorderColor = "rgb(220, 53, 69)",
+                    BorderWidth = 2
+                }
+            }
+        };
+
+        var options = new LineChartOptions();
+        options.Plugins.Title!.Display = true;
+        options.Plugins.Title.Text = "Aylık Gelir / Gider Eğrisi";
+        options.Plugins.Title.Color = "white";
+        options.Plugins.Title.Font = new ChartFont { Size = 20 };
+
+        await lineChart.InitializeAsync(data, options);
+    }
+
+    private async Task RenderPieChartAsync()
+    {
+        chartData.Labels = new List<string> { "Ulaşılan Hedefler", "Devam eden Hedefler" };
+        chartData.Datasets = new List<IChartDataset>
+        {
+            new PieChartDataset
+            {
+                Data = new List<double?> { totalAchivedGoal, totalNotAchivedGoal },
+                BackgroundColor = colors.ToList()
+            }
+        };
+        pieChartOptions.Plugins.Title!.Display = true;
+        pieChartOptions.Plugins.Title.Text = "Hedef Durumu";
+        pieChartOptions.Plugins.Title.Color = "white";
+        pieChartOptions.Plugins.Title.Font = new ChartFont { Size = 20 };
+        if (pieChart is not null)
+        {
+            await pieChart.InitializeAsync(chartData, pieChartOptions);
+        }
+    }
+
+  
+
+
+}

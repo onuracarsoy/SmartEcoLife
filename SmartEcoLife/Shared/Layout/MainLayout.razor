@@ -1,0 +1,87 @@
+﻿@inherits LayoutComponentBase
+<body>
+    
+    <aside class="sidebar d-flex flex-column">
+        <a href="#" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none">
+            <i class="bi bi-leaf fa-2x me-2"></i>
+            <span class="fs-4">Smart Eco Life</span>
+        </a>
+        <hr>
+        <NavMenu />
+     
+        <hr>
+
+
+    </aside>
+
+    <div class="main-content d-flex flex-column">
+
+        <nav class="navbar navbar-expand-lg bg-dark border-bottom border-secondary" style="background-color: #212529 !important;">
+            <div class="container-fluid">
+
+                <button class="bg-dark" type="button" id="sidebarToggleBtn">
+                    <i class=" text-white fas fa-bars"></i>
+                </button>
+
+                <div class="ms-auto">
+                    <ul class="navbar-nav">
+                        <li class="nav-item">
+                            <a class="nav-link text-white" href="/myaccount"><i class="fas fa-user"></i> Profilim</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-danger" href="/logout"><i class="fas fa-power-off"></i> Çıkış Yap</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+
+        <main class="container-fluid p-4 flex-grow-1">
+            @Body
+   
+
+    
+        </main>
+
+        <footer class="text-center text-white-50  p-3 mt-auto  border-top border-secondary">
+            &copy; 2025 Smart Eco Life. Tüm hakları saklıdır.
+        </footer>
+
+    </div>
+
+
+
+
+
+</body>
+
+@* <div class="page">
+    <NavMenu />
+
+    <main>
+        <div class="top-row">
+       
+            <div class="user-actions">
+                <a href="/profile" class="profile-link">
+                    <i class="fas fa-user"></i>
+                    <span>Profil</span>
+                </a>
+                <a href="/LogOut" class="logout-link">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Çıkış Yap</span>
+                </a>
+            </div>
+        </div>
+
+        <article class="content px-4">
+            @Body
+        </article>
+    </main>
+</div>
+
+<div id="blazor-error-ui">
+    Bir hata oluştu.
+    <a href="" class="reload">Yenile</a>
+    <a class="dismiss">🗙</a>
+</div>
+ *@

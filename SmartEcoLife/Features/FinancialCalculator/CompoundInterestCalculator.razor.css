@@ -1,0 +1,93 @@
+﻿.custom-input {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    color: #fff !important;
+    transition: all 0.3s ease;
+}
+
+    .custom-input:focus {
+        background: rgba(255, 255, 255, 0.08) !important;
+        border-color: #667eea !important;
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        color: #fff !important;
+    }
+
+    .custom-input::placeholder {
+        color: rgba(255, 255, 255, 0.4);
+    }
+
+.btn-gradient {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    color: white;
+    font-weight: 600;
+    padding: 10px;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+    .btn-gradient:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        color: white;
+    }
+
+.custom-alert-success {
+    background: rgba(72, 187, 120, 0.1);
+    border: 1px solid rgba(72, 187, 120, 0.3);
+    border-radius: 8px;
+    color: #e2e8f0;
+}
+
+.custom-alert-info {
+    background: rgba(66, 153, 225, 0.1);
+    border: 1px solid rgba(66, 153, 225, 0.3);
+    border-radius: 8px;
+    color: #e2e8f0;
+}
+
+.custom-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+}
+
+.custom-progress {
+    height: 25px;
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.custom-table {
+    color: #e2e8f0;
+}
+
+    .custom-table thead {
+        background: rgba(255, 255, 255, 0.05);
+    }
+
+    .custom-table tbody tr {
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+        .custom-table tbody tr:hover {
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+.custom-scrollbar::-webkit-scrollbar {
+    width: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(102, 126, 234, 0.5);
+    border-radius: 4px;
+}
+
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+        background: rgba(102, 126, 234, 0.7);
+    }

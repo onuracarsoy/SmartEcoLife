@@ -1,0 +1,98 @@
+﻿@page "/goals/update/{GoalId:guid}"
+@inject GoalService GoalService
+@inject NavigationManager NavigationManager
+@rendermode InteractiveServer
+
+<div class="row">
+    <div class="col-12">
+        <h3 class="mb-4"><i class="bi bi-pencil-square"></i> Hedefi Düzenle</h3>
+    </div>
+</div>
+
+@if (model is not null)
+{
+    @if (!string.IsNullOrEmpty(message))
+    {
+
+        <Alert Class="@messageType"> <Icon Name="IconName.CheckCircleFill" class="me-2"></Icon>@message </Alert>
+    }
+
+    <EditForm Model="model" OnValidSubmit="HandleUpdate">
+        <DataAnnotationsValidator />
+
+        <div class="mb-3">
+            <p class="form-label fw-bold">* Başlık</p>
+            <InputText @bind-Value="model.Title" class="form-control bg-dark text-white" />
+            <ValidationMessage class="text-danger" For="@(() => model.Title)" />
+        </div>
+
+        <div class="mb-3">
+            <p class="form-label fw-bold">Açıklama</p>
+            <InputTextArea @bind-Value="model.Description" class="form-control bg-dark text-white" />
+            <ValidationMessage class="text-danger" For="@(() => model.Description)" />
+        </div>
+
+        <div class="mb-3">
+            <p class="form-label fw-bold">* Hedef Miktar</p>
+            <InputNumber @bind-Value="model.TargetAmount" class="form-control bg-dark text-white" />
+            <ValidationMessage class="text-danger" For="@(() => model.TargetAmount)" />
+        </div>
+
+        <div class="mb-3">
+            <p class="form-label fw-bold">Son Tarih</p>
+            <InputDate @bind-Value="model.DueDate" class="form-control bg-dark text-white" />
+            <ValidationMessage class="text-danger" For="@(() => model.DueDate)" />
+        </div>
+
+
+
+        <button class="btn btn-primary" type="submit">Kaydet</button>
+        <a class="btn btn-danger" href="/goals">Vazgeç</a>
+    </EditForm>
+}
+else
+{
+    <div class="d-flex justify-content-center align-items-center" style="height: 100vh;">
+        <Spinner Type="SpinnerType.Grow" Class="bg-white" Size="SpinnerSize.ExtraLarge" />
+    </div>
+}
+
+
+
+
+@code {
+    [Parameter]
+    public Guid GoalId { get; set; }
+    private GoalDto model { get; set; } = new();
+    private string? message;
+    private string messageType;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        model = await GoalService.GetByIdAsync(GoalId);
+    }
+
+    private async Task HandleUpdate()
+    {
+
+
+        if (model is not null)
+        {
+            await GoalService.UpdateAsync(model);
+            await Task.Delay(500);
+            NavigationManager.NavigateTo("/goals", true);
+            messageType = "bg-success";
+            message = "Hedef başarıyla düzenlendi.";
+            model = new();
+        }
+        else
+        {
+            messageType = "bg-danger";
+            message = "Hedef düzenlenirken bir hata oluştu.";
+        }
+    }
+
+}
+

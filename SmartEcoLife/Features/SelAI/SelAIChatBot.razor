@@ -1,0 +1,135 @@
+﻿@page "/selai-chatbot"
+@attribute [Authorize]
+@inject SelAIService SelAIService
+@inject IJSRuntime JS
+@rendermode InteractiveServer
+
+<div class="chat-wrapper">
+
+    <div class="chat-body" id="chatMessages">
+        <div class="chat-bubble ai">Merhaba! Ben Akıllı Finans Asistanın Sel. Finansal durumunu birlikte değerlendirip daha verimli bir bütçe planı oluşturabiliriz. Başlamak için bir soru sorabilirsin.</div>
+
+        @foreach (var message in Messages)
+        {
+            if (errorMessageVisible || string.IsNullOrEmpty(message.Text))
+            {
+                <div class="chat-bubble ai">
+                    <Alert Color="AlertColor.Danger">
+                        <Icon Name="IconName.ExclamationTriangleFill" class="me-2"></Icon>
+                        Bir hata oluştu. Lütfen daha sonra tekrar deneyin.
+                    </Alert>
+                </div>
+            }
+            else
+            {
+                <div class="chat-bubble @(message.IsUser ? "user" : "ai")">
+                    @message.Text
+                </div>
+            }
+        }
+
+        @if (IsLoading)
+        {
+            <div class="chat-bubble ai">
+                <Spinner Type="SpinnerType.Dots" Color="SpinnerColor.Light" />
+            </div>
+        }
+    </div>
+
+    <div class="chat-input">
+        <textarea @bind-value="UserMessage"
+                  placeholder="Finansal danışmanına bir şey sor..."
+                  rows="2"
+                  @onkeydown="HandleKeyDown"
+                  @bind-value:event="oninput"></textarea>
+
+        <button @onclick="SendMessageAsync" disabled="@IsLoading">
+            @if (IsLoading)
+            {
+                <Spinner Color="SpinnerColor.Light" />
+            }
+            else
+            {
+                <i class="bi bi-send-fill"></i>
+            }
+        </button>
+    </div>
+</div>
+
+<script>
+    window.scrollChatToBottom = (selector) => {
+        try {
+            const el = document.querySelector(selector);
+            if (el) {
+                el.scrollTo({
+                    top: el.scrollHeight,
+                    behavior: "smooth"
+                });
+            }
+        } catch (err) {
+            console.error("Scroll hata:", err);
+        }
+    };
+</script>
+
+@code {
+    private string UserMessage = string.Empty;
+    private bool IsLoading = false;
+    private List<SelAIChatMessageDto> Messages = new();
+    private bool errorMessageVisible = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+       
+        Messages = await SelAIService.GetCachedChatHistoryAsync();
+    }
+
+    private async Task SendMessageAsync()
+    {
+        if (string.IsNullOrWhiteSpace(UserMessage)) return;
+
+        var userText = UserMessage.Trim();
+        Messages.Add(new SelAIChatMessageDto { Text = userText, IsUser = true });
+        UserMessage = string.Empty;
+        IsLoading = true;
+
+        await ScrollToBottomAsync();
+
+        try
+        {
+            errorMessageVisible = false;
+            var aiResponse = await SelAIService.ChatAsync(userText);
+            Messages.Add(new SelAIChatMessageDto { Text = aiResponse, IsUser = false });
+        }
+        catch (Exception ex)
+        {
+            errorMessageVisible = true;
+            Messages.Add(new SelAIChatMessageDto { Text = $"Bir hata oluştu: {ex.Message}", IsUser = false });
+        }
+
+        IsLoading = false;
+        await ScrollToBottomAsync();
+    }
+
+    private async Task HandleKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter" && !e.ShiftKey && !IsLoading)
+        {
+            await SendMessageAsync();
+            await Task.Delay(50);
+        }
+    }
+
+    private async Task ScrollToBottomAsync()
+    {
+        await JS.InvokeVoidAsync("scrollChatToBottom", ".chat-body");
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+        {
+            await ScrollToBottomAsync();
+        }
+    }
+}

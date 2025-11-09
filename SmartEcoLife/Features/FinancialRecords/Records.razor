@@ -1,0 +1,114 @@
+﻿@inject FinancialRecordService FinancialRecordService
+@inject NavigationManager Navigation
+
+@if (records is  null)
+{
+    <div class="d-flex justify-content-center align-items-center" style="height:200px;">
+        <Spinner Type="SpinnerType.Grow" Class="bg-white" Size="SpinnerSize.Large" />
+    </div>
+}
+else if (!records.Any())
+{
+
+    <div class="d-flex justify-content-center align-items-center" style="height:200px;">
+        <p class="text-center fs-5"><i class="bi bi-archive "></i>  Henüz bir kayıt eklemediniz.</p>
+    </div>
+}
+else
+{
+    <Grid TItem="FinancialRecordDto"
+          AllowFiltering="true"
+          AllowPaging="true"
+          AllowSorting="true"
+          AutoHidePaging="true"
+          Class="table table-hover table-bordered table-dark mt-3 text-white"
+          DataProvider="RecordsDataProvider"
+          PageSize="10"
+          PageSizeSelectorVisible="true"
+          PageSizeSelectorItems="@(new int[] { 5,10,20 })"
+          Responsive="true"
+          >
+ 
+
+        
+        <GridColumns>
+         
+            <GridColumn TItem="FinancialRecordDto" HeaderText="Başlık" PropertyName="Title" SortKeySelector="item => item.Title">
+                @context.Title
+               
+            </GridColumn>
+
+            <GridColumn TItem="FinancialRecordDto" HeaderText="Tutar" PropertyName="Amount" SortKeySelector="item => item.Amount">
+                ₺@context.Amount
+            </GridColumn>
+
+            <GridColumn TItem="FinancialRecordDto" HeaderText="Açıklama" PropertyName="Description" SortKeySelector="item => item.Description">
+                @context.Description
+            </GridColumn>
+
+            <GridColumn TItem="FinancialRecordDto" HeaderText="Tür" PropertyName="Type" SortKeySelector="item => item.Type">
+                @if (context.Type == "Income")
+                {
+                    <Badge Color="BadgeColor.Success">Gelir</Badge>
+                }
+                else
+                {
+                    <Badge Color="BadgeColor.Danger">Gider</Badge>
+                }
+            </GridColumn>
+
+            <GridColumn TItem="FinancialRecordDto" HeaderText="Kategori" PropertyName="CategoryName" SortKeySelector="item => item.CategoryName">
+                @context.CategoryName
+            </GridColumn>
+
+            <GridColumn TItem="FinancialRecordDto" HeaderText="Tarih" PropertyName="Date" SortKeySelector="item => item.Date">
+                @context.Date.ToLocalTime().ToString("dd.MM.yyyy HH:mm")
+            </GridColumn>
+            <GridColumn TItem="FinancialRecordDto" HeaderText="İşlemler"  PropertyName="İşlemler" Filterable="false" Sortable="false">
+                <ChildContent>
+                      <div class="d-flex gap-2">
+                    <a class="btn btn-sm btn-outline-light" href="/financial-record/update/@context.Id"><i class="bi bi-pencil-fill"></i></a>
+      
+                    <DeleteRecord RecordId="@context.Id" />
+                    </div>
+                </ChildContent>
+            </GridColumn>
+     
+        </GridColumns>
+
+
+    </Grid>
+}
+
+
+
+
+@code {
+
+
+    private IEnumerable<FinancialRecordDto>? records;
+
+    protected override async  Task OnInitializedAsync()
+    {
+        await Task.Delay(1000);
+        records = await FinancialRecordService.GetAllAsync();
+    }
+
+    private async Task<GridDataProviderResult<FinancialRecordDto>> RecordsDataProvider(GridDataProviderRequest<FinancialRecordDto> request)
+    {
+
+        if (records is null)
+        {
+            records = await FinancialRecordService.GetAllAsync();
+        }
+
+
+        return await Task.FromResult(request.ApplyTo(records));
+    }
+
+    private async Task HandleUpdate(Guid id)
+    {
+
+        Navigation.NavigateTo($"/financial-record/update/");
+    }
+}

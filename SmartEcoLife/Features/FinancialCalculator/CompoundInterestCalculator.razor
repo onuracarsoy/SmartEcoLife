@@ -1,0 +1,218 @@
+﻿
+@using System.Globalization
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card shadow-sm border-0" style="background: linear-gradient(135deg, #0f1012 0%, #171923 100%);">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold text-light">Başlangıç Tutarı (₺)</label>
+                                <input type="number" class="form-control custom-input" @bind="initialAmount"
+                                       placeholder="Örn: 10000" step="100" min="0" />
+                                <small class="form-text text-white">İlk yatırım tutarınız</small>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-bold text-light">Aylık Katkı (₺)</label>
+                                <input type="number" class="form-control custom-input" @bind="monthlyContribution"
+                                       placeholder="Örn: 500" step="50" min="0" />
+                                <small class="form-text text-white">Her ay ekleyeceğiniz tutar</small>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-bold text-light">Yıllık Faiz Oranı (%)</label>
+                                <input type="number" class="form-control custom-input" @bind="interestRate"
+                                       placeholder="Örn: 15" step="0.1" min="0" max="100" />
+                                <small class="form-text text-white">Beklenen yıllık getiri oranı</small>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-bold text-light">Süre (Yıl)</label>
+                                <input type="number" class="form-control custom-input" @bind="duration"
+                                       placeholder="Örn: 10" step="1" min="1" max="50" />
+                                <small class="form-text text-white">Yatırım süresi</small>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-bold text-light ">Bileşik Faiz Frekansı</label>
+                                <select class="form-select text-white bg-dark" @bind="compoundFrequency">
+                                    <option value="12">Aylık</option>
+                                    <option value="4">3 Aylık</option>
+                                    <option value="2">6 Aylık</option>
+                                    <option value="1">Yıllık</option>
+                                </select>
+                            </div>
+
+                            <button class="btn w-100 btn-gradient" @onclick="Calculate">
+                                <i class="bi bi-calculator-fill"></i> Hesapla
+                            </button>
+                        </div>
+
+                        <div class="col-md-6">
+                            @if (isCalculated)
+                            {
+                                <div class="alert custom-alert-success">
+                                    <h5 class="alert-heading">
+                                        <i class="bi bi-check-circle"></i> Hesaplama Sonuçları
+                                    </h5>
+                                    <hr class="border-success border-opacity-25">
+                                    <div class="mb-3">
+                                        <strong class="text-light">Toplam Yatırılan:</strong>
+                                        <div class="fs-5 text-info">@totalInvested.ToString("C0", new CultureInfo("tr-TR"))</div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <strong class="text-light">Kazanılan Faiz:</strong>
+                                        <div class="fs-5 text-success">@interestEarned.ToString("C0", new CultureInfo("tr-TR"))</div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <strong class="text-light">Toplam Birikim:</strong>
+                                        <div class="fs-4 fw-bold text-warning">@finalValue.ToString("C0", new CultureInfo("tr-TR"))</div>
+                                    </div>
+
+                                    <div class="progress mt-3 custom-progress">
+                                        <div class="progress-bar" role="progressbar"
+                                             style="width: @(totalInvested / finalValue * 100)%; background: linear-gradient(90deg, #4299e1 0%, #3182ce 100%);">
+                                            Ana Para
+                                        </div>
+                                        <div class="progress-bar" role="progressbar"
+                                             style="width: @(interestEarned / finalValue * 100)%; background: linear-gradient(90deg, #48bb78 0%, #38a169 100%);">
+                                            Faiz
+                                        </div>
+                                    </div>
+                                    <small class="text-muted d-block mt-2">
+                                        Yatırımınız @duration yıl sonunda yaklaşık @((finalValue / totalInvested - 1) * 100).ToString("F1")% büyümüş olacak
+                                    </small>
+                                </div>
+
+                                <div class="card custom-card ">
+                                    <div class="card-body">
+                                        <h6 class="card-title text-light">Yıllara Göre Gelişim</h6>
+                                        <div class="table-responsive custom-scrollbar" style="max-height: 300px;overflow-y: auto;">
+                                            <table class="table table-sm table-hover custom-table  ">
+                                                <thead class="sticky-top b">
+                                                    <tr>
+                                                        <th class="text-light bg-dark">Yıl</th>
+                                                        <th class="text-end text-light bg-dark">Bakiye</th>
+                                                        <th class="text-end text-light bg-dark">Faiz</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @foreach (var year in yearlyDetails)
+                                                    {
+                                                        <tr >
+                                                            <td class="text-light bg-dark">@year.Year</td>
+                                                            <td class="text-end text-light bg-dark">@year.Balance.ToString("C0", new CultureInfo("tr-TR"))</td>
+                                                            <td class="text-end text-success bg-dark">@year.Interest.ToString("C0", new CultureInfo("tr-TR"))</td>
+                                                        </tr>
+                                                    }
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="alert custom-alert-info">
+                                    <i class="bi bi-info-circle"></i>
+                                    <strong class="text-light">Nasıl Kullanılır?</strong>
+                                    <ul class="mt-2 mb-0 text-light">
+                                        <li>Başlangıç tutarınızı girin</li>
+                                        <li>Aylık katkı miktarınızı belirleyin</li>
+                                        <li>Beklenen yıllık faiz oranını girin</li>
+                                        <li>Yatırım sürenizi seçin</li>
+                                        <li>"Hesapla" butonuna tıklayın</li>
+                                    </ul>
+                                </div>
+
+                                <div class="card custom-card mt-3">
+                                    <div class="card-body">
+                                        <h6 class="card-title text-light">
+                                            <i class="bi bi-lightbulb"></i> Bileşik Faiz Nedir?
+                                        </h6>
+                                        <p class="small mb-0 text-light">
+                                            Bileşik faiz, kazandığınız faizin de faiz getirmesidir.
+                                            Yatırımınız her dönem büyüdükçe, bir sonraki dönemde daha
+                                            fazla faiz kazanırsınız. Bu sayede paranız zamanla katlanarak büyür.
+                                        </p>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@code {
+    private decimal initialAmount = 10000;
+    private decimal monthlyContribution = 500;
+    private decimal interestRate = 15;
+    private int duration = 10;
+    private int compoundFrequency = 12;
+
+    private bool isCalculated = false;
+    private decimal finalValue = 0;
+    private decimal totalInvested = 0;
+    private decimal interestEarned = 0;
+
+    private List<YearlyDetail> yearlyDetails = new List<YearlyDetail>();
+
+    private void Calculate()
+    {
+        if (initialAmount < 0 || interestRate < 0 || duration < 1)
+        {
+            return;
+        }
+
+        decimal principal = initialAmount;
+        decimal monthlyAmount = monthlyContribution;
+        decimal rate = interestRate / 100;
+
+        decimal periodRate = rate / compoundFrequency;
+        int totalPeriods = duration * compoundFrequency;
+        int monthsPerPeriod = 12 / compoundFrequency;
+
+        decimal balance = principal;
+        totalInvested = principal;
+        yearlyDetails.Clear();
+
+        for (int period = 1; period <= totalPeriods; period++)
+        {
+            balance = balance * (1 + periodRate);
+
+            decimal periodContribution = monthlyAmount * monthsPerPeriod;
+            balance += periodContribution;
+            totalInvested += periodContribution;
+
+            if (period % compoundFrequency == 0)
+            {
+                int year = period / compoundFrequency;
+                decimal yearlyInterest = balance - totalInvested;
+                yearlyDetails.Add(new YearlyDetail
+                {
+                    Year = year,
+                    Balance = balance,
+                    Interest = yearlyInterest
+                });
+            }
+        }
+
+        finalValue = balance;
+        interestEarned = finalValue - totalInvested;
+        isCalculated = true;
+    }
+
+    public class YearlyDetail
+    {
+        public int Year { get; set; }
+        public decimal Balance { get; set; }
+        public decimal Interest { get; set; }
+    }
+}

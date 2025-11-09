@@ -1,0 +1,261 @@
+﻿
+@using System.Globalization
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card shadow-sm border-0" style="background: linear-gradient(135deg, #0f1012 0%, #171923 100%);">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold text-light">Kredi Tutarı (₺)</label>
+                                <input type="number" class="form-control custom-input" @bind="loanAmount"
+                                       placeholder="Örn: 100000" step="1000" min="0" />
+                                <small class="form-text text-white">Çekmek istediğiniz kredi miktarı</small>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-bold text-light">Aylık Faiz Oranı (%)</label>
+                                <input type="number" class="form-control custom-input" @bind="monthlyInterestRate"
+                                       placeholder="Örn: 2.5" step="0.1" min="0" max="100" />
+                                <small class="form-text text-white">Bankanın uyguladığı aylık faiz oranı</small>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-bold text-light">Vade (Ay)</label>
+                                <input type="number" class="form-control custom-input" @bind="loanTerm"
+                                       placeholder="Örn: 36" step="1" min="1" max="360" />
+                                <small class="form-text text-white">Kaç ay içinde ödemek istiyorsunuz</small>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-bold text-light">Ödeme Tipi</label>
+                                <select class="form-select text-white bg-dark" @bind="paymentType">
+                                    <option value="equal">Eşit Taksit (Azalan Anapara)</option>
+                                    <option value="fixed">Sabit Taksit (Eşit Ödemeler)</option>
+                                </select>
+                            </div>
+
+                            <button class="btn w-100 btn-gradient" @onclick="Calculate">
+                                <i class="bi bi-calculator-fill"></i> Hesapla
+                            </button>
+                        </div>
+
+                        <div class="col-md-6">
+                            @if (isCalculated)
+                            {
+                                <div class="alert custom-alert-success">
+                                    <h5 class="alert-heading">
+                                        <i class="bi bi-check-circle"></i> Hesaplama Sonuçları
+                                    </h5>
+                                    <hr class="border-success border-opacity-25">
+                                    <div class="mb-3">
+                                        <strong class="text-light">
+                                            @if (paymentType == "equal")
+                                            {
+                                                <span>İlk Taksit:</span>
+                                            }
+                                            else
+                                            {
+                                                <span>Aylık Taksit:</span>
+                                            }
+                                        </strong>
+                                        <div class="fs-5 text-info">@firstInstallment.ToString("C2", new CultureInfo("tr-TR"))</div>
+                                    </div>
+                                    @if (paymentType == "equal")
+                                    {
+                                        <div class="mb-3">
+                                            <strong class="text-light">Son Taksit:</strong>
+                                            <div class="fs-5 text-info">@lastInstallment.ToString("C2", new CultureInfo("tr-TR"))</div>
+                                        </div>
+                                    }
+                                    <div class="mb-3">
+                                        <strong class="text-light">Toplam Faiz:</strong>
+                                        <div class="fs-5 text-warning">@totalInterest.ToString("C2", new CultureInfo("tr-TR"))</div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <strong class="text-light">Toplam Geri Ödeme:</strong>
+                                        <div class="fs-4 fw-bold text-danger">@totalPayment.ToString("C2", new CultureInfo("tr-TR"))</div>
+                                    </div>
+
+                                    <div class="progress mt-3 custom-progress">
+                                        <div class="progress-bar" role="progressbar"
+                                             style="width: @(loanAmount / totalPayment * 100)%; background: linear-gradient(90deg, #4299e1 0%, #3182ce 100%);">
+                                            Ana Para (@((loanAmount / totalPayment * 100).ToString("F0"))%)
+                                        </div>
+                                        <div class="progress-bar" role="progressbar"
+                                             style="width: @(totalInterest / totalPayment * 100)%; background: linear-gradient(90deg, #f56565 0%, #e53e3e 100%);">
+                                            Faiz (@((totalInterest / totalPayment * 100).ToString("F0"))%)
+                                        </div>
+                                    </div>
+                                    <small class="text-muted d-block mt-2">
+                                        Kredinin @((totalInterest / loanAmount * 100).ToString("F1"))%'i faiz ödemesidir
+                                    </small>
+                                </div>
+
+                                <div class="card custom-card">
+                                    <div class="card-body">
+                                        <h6 class="card-title text-light">Ödeme Planı</h6>
+                                        <div class="table-responsive custom-scrollbar" style="max-height: 300px; overflow-y: auto;">
+                                            <table class="table table-sm table-hover custom-table">
+                                                <thead class="sticky-top">
+                                                    <tr>
+                                                        <th class="text-light bg-dark">Ay</th>
+                                                        <th class="text-end text-light bg-dark">Taksit</th>
+                                                        <th class="text-end text-light bg-dark">Anapara</th>
+                                                        <th class="text-end text-light bg-dark">Faiz</th>
+                                                        <th class="text-end text-light bg-dark">Kalan</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @foreach (var payment in paymentSchedule)
+                                                    {
+                                                        <tr>
+                                                            <td class="text-light bg-dark">@payment.Month</td>
+                                                            <td class="text-end text-info bg-dark">@payment.Installment.ToString("C0", new CultureInfo("tr-TR"))</td>
+                                                            <td class="text-end text-light bg-dark">@payment.Principal.ToString("C0", new CultureInfo("tr-TR"))</td>
+                                                            <td class="text-end text-warning bg-dark">@payment.Interest.ToString("C0", new CultureInfo("tr-TR"))</td>
+                                                            <td class="text-end text-success bg-dark">@payment.RemainingBalance.ToString("C0", new CultureInfo("tr-TR"))</td>
+                                                        </tr>
+                                                    }
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="alert custom-alert-info">
+                                    <i class="bi bi-info-circle"></i>
+                                    <strong class="text-light">Nasıl Kullanılır?</strong>
+                                    <ul class="mt-2 mb-0 text-light">
+                                        <li>Kredi tutarını girin</li>
+                                        <li>Bankanın uyguladığı aylık faiz oranını yazın</li>
+                                        <li>Kaç ay içinde ödemek istediğinizi belirleyin</li>
+                                        <li>Ödeme tipini seçin</li>
+                                        <li>"Hesapla" butonuna tıklayın</li>
+                                    </ul>
+                                </div>
+
+                                <div class="card custom-card mt-3">
+                                    <div class="card-body">
+                                        <h6 class="card-title text-light">
+                                            <i class="bi bi-lightbulb"></i> Ödeme Tipleri Nedir?
+                                        </h6>
+                                        <p class="small mb-2 text-light">
+                                            <strong>Eşit Taksit (Azalan Anapara):</strong> Her ay aynı anapara ödersiniz,
+                                            fakat faiz azaldığı için toplam taksit miktarı azalır.
+                                        </p>
+                                        <p class="small mb-0 text-light">
+                                            <strong>Sabit Taksit (Eşit Ödemeler):</strong> Her ay aynı tutarı ödersiniz.
+                                            İlk aylarda daha çok faiz, son aylarda daha çok anapara ödersiniz.
+                                        </p>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@code {
+    private decimal loanAmount = 100000;
+    private decimal monthlyInterestRate = 2.5m;
+    private int loanTerm = 36;
+    private string paymentType = "equal";
+
+    private bool isCalculated = false;
+    private decimal firstInstallment = 0;
+    private decimal lastInstallment = 0;
+    private decimal totalInterest = 0;
+    private decimal totalPayment = 0;
+
+    private List<PaymentDetail> paymentSchedule = new List<PaymentDetail>();
+
+    private void Calculate()
+    {
+        if (loanAmount <= 0 || monthlyInterestRate < 0 || loanTerm < 1)
+        {
+            return;
+        }
+
+        decimal rate = monthlyInterestRate / 100;
+        paymentSchedule.Clear();
+        totalInterest = 0;
+
+        if (paymentType == "equal")
+        {
+            // Eşit Taksit (Azalan Anapara)
+            decimal principalPerMonth = loanAmount / loanTerm;
+            decimal remainingBalance = loanAmount;
+
+            for (int month = 1; month <= loanTerm; month++)
+            {
+                decimal interestPayment = remainingBalance * rate;
+                decimal installment = principalPerMonth + interestPayment;
+                remainingBalance -= principalPerMonth;
+
+                paymentSchedule.Add(new PaymentDetail
+                {
+                    Month = month,
+                    Installment = installment,
+                    Principal = principalPerMonth,
+                    Interest = interestPayment,
+                    RemainingBalance = remainingBalance < 0 ? 0 : remainingBalance
+                });
+
+                totalInterest += interestPayment;
+
+                if (month == 1) firstInstallment = installment;
+                if (month == loanTerm) lastInstallment = installment;
+            }
+        }
+        else
+        {
+            // Sabit Taksit (Eşit Ödemeler)
+            decimal fixedInstallment = loanAmount * (rate * (decimal)Math.Pow((double)(1 + rate), loanTerm)) /
+                                      ((decimal)Math.Pow((double)(1 + rate), loanTerm) - 1);
+
+            decimal remainingBalance = loanAmount;
+
+            for (int month = 1; month <= loanTerm; month++)
+            {
+                decimal interestPayment = remainingBalance * rate;
+                decimal principalPayment = fixedInstallment - interestPayment;
+                remainingBalance -= principalPayment;
+
+                paymentSchedule.Add(new PaymentDetail
+                {
+                    Month = month,
+                    Installment = fixedInstallment,
+                    Principal = principalPayment,
+                    Interest = interestPayment,
+                    RemainingBalance = remainingBalance < 0 ? 0 : remainingBalance
+                });
+
+                totalInterest += interestPayment;
+            }
+
+            firstInstallment = fixedInstallment;
+            lastInstallment = fixedInstallment;
+        }
+
+        totalPayment = loanAmount + totalInterest;
+        isCalculated = true;
+    }
+
+    public class PaymentDetail
+    {
+        public int Month { get; set; }
+        public decimal Installment { get; set; }
+        public decimal Principal { get; set; }
+        public decimal Interest { get; set; }
+        public decimal RemainingBalance { get; set; }
+    }
+}

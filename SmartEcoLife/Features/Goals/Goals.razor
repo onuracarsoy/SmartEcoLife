@@ -1,0 +1,40 @@
+﻿@page "/goals"
+@attribute [Authorize]
+@rendermode InteractiveServer
+
+<div class="row">
+    <div class="col-12">
+        <h3 class="mb-3"><i class="fa fa-trophy"></i> Hedefler</h3>
+
+    </div>
+</div>
+
+<style>
+    .nav-link {
+        color: gray;
+    }
+
+        .nav-link:hover {
+            color: white;
+        }
+</style>
+
+<Tabs EnableFadeEffect="true">
+
+    <Tab Title="Hedefler" Active="true">
+        <Content>
+            <br />
+            <GoalList/>
+        </Content>
+    </Tab>
+    <Tab Title="Yeni Hedef">
+        <Content>
+            <br />
+            <CreateGoal />
+        </Content>
+    </Tab>
+</Tabs>
+
+@code {
+
+}
