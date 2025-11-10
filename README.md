@@ -178,10 +178,11 @@ SmartEcoLife/
 5. **Önerileri İnceleme**: Dashboard'da AI'dan gelen kişiselleştirilmiş önerileri görün
 
 
+<img width="1905" height="847" alt="Ekran görüntüsü 2025-11-10 021923" src="https://github.com/user-attachments/assets/8c96e014-3db1-4567-8573-c332afd20fa1" />
+<img width="1911" height="853" alt="Ekran görüntüsü 2025-11-10 021749" src="https://github.com/user-attachments/assets/cde62b90-f95b-4194-99b5-bbde1f9b5631" />
+<img width="1897" height="858" alt="Ekran görüntüsü 2025-11-10 022055" src="https://github.com/user-attachments/assets/03be19a7-fa38-4473-901a-b6ed4771f63e" />
+<img width="1907" height="847" alt="Ekran görüntüsü 2025-11-10 021939" src="https://github.com/user-attachments/assets/82c8e7a4-26b8-4971-a9df-cf2f5d8aac95" />
 
 
 
----
-
-**Not**: Bu proje eğitim ve geliştirme amaçlıdır. Production kullanımı için ek güvenlik önlemleri alınması önerilir.
 
